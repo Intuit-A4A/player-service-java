@@ -1,0 +1,27 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - name: player-service-app
+    init: mvn package -DskipTests
+  - name: player-service-model
+    before: |
+      cd player-service-model
+      docker build -t a4a_model .
+    init: docker run -d -p 5000:5000 a4a_model
+  - name: llm-setup-ollama
+    before: |
+        docker pull ollama/ollama
+        docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+    init: docker exec -it ollama ollama run tinyllama
+
+ports:
+  - port: 8080  # Port for player-service-app
+    onOpen: open-preview
+
+vscode:
+  extensions:
+    - redhat.java
+    - vscjava.vscode-java-debug
+    - vscjava.vscode-java-test
+    - pivotal.vscode-spring-boot
